@@ -35,6 +35,7 @@ defmodule Tcpchat do
 end
 
 defmodule Tcpchat.Server do
+
   def start(port, server_name, server_motd) when is_integer(port) do
     server_pid = spawn(fn -> server_handler(server_name, server_motd, %{}) end)
     listen(port, server_pid)
