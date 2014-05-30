@@ -141,8 +141,8 @@ defmodule Tcpchat.Server do
             send(channels[chan_name], {:talk, {user_name, message}})
           {:motd} ->
             send(server_pid, {:motd, {user_name, self()}})
-          #{:motd} ->
-            #  send(server_pid, {:motd, motd, {user_name, self()}})
+          {:motd, motd} ->
+            send(server_pid, {:motd, motd, {user_name, self()}})
           {:error, :syntax} ->
             :gen_tcp.send(socket, "ERROR: Invalid command (#{str_cmd})\n")
             :gen_tcp.send(socket, Tcpchat.cmd_help())
