@@ -52,7 +52,7 @@ defmodule Tcpchat.Server do
 
   defp listen(listen_socket, counter, server_pid) do
     {:ok, socket} = :gen_tcp.accept(listen_socket)
-    user_pid = spawn(fn -> user_handler(socket, counter, server_pid) end)
+    user_pid = spawn(fn -> Tcpchat.User.user_handler(socket, counter, server_pid) end)
     # Assign the user process as the owner of its socket
     :gen_tcp.controlling_process(socket, user_pid)
     listen(listen_socket, counter + 1, server_pid)
@@ -71,7 +71,7 @@ defmodule Tcpchat.Server do
           channels[chan_name]
         else
           # Channel doesn't yet exist, create it
-          spawn(fn -> channel_handler(chan_name, "", %{}) end)
+          spawn(fn -> Tcpchat.Channel.channel_handler(chan_name, "", %{}) end)
         end
         send(chan_pid, {:join, user})
         server_handler(server_name, server_motd, put(channels, chan_name, chan_pid))
@@ -91,11 +91,15 @@ defmodule Tcpchat.Server do
     end
   end
 
+end
+
+defmodule Tcpchat.User do
+
   # User handler - one for each user connected to the system, handles all
   # incoming and outgoing messages for that user and tracks the user's name and
   # list of active channels.
 
-  defp user_handler(socket, counter, server_pid) do
+  def user_handler(socket, counter, server_pid) do
     user_name = "user_#{counter}"
     user_handler(socket, user_name, %{}, server_pid)
   end
@@ -159,11 +163,15 @@ defmodule Tcpchat.Server do
     end
   end
 
+end
+
+defmodule Tcpchat.Channel do
+
   # Channel handler - one for each channel in the system, handles all
   # communication within the channel as well as channel state like the channel
   # name and topic. Once created, will never be destroyed.
 
-  defp channel_handler(chan_name, chan_topic, users) do
+  def channel_handler(chan_name, chan_topic, users) do
     import Enum, only: [each: 2]
     import Map, only: [put: 3, delete: 2]
     receive do
