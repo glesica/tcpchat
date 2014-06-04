@@ -3,7 +3,18 @@
 A simple, naive, chat server application designed to demonstrate Elixir/Erlang
 development patterns and concurrency.
 
-Right now to run it just do:
+To build it:
 
-    $ elixir -r lib/tcpchat.ex -e 'Tcpchat.Server.start(3000, "myserver",
-    "welcome to the server!")'
+~~~
+$ mix escriptize
+~~~
+
+To run it:
+
+~~~
+$ ./tcpchat [--port <port>] [--name <name>] [--motd <motd>]
+~~~
+
+  * `port` - the port to run on
+  * `name` - the server's name
+  * `motd` - the server's message of the day
