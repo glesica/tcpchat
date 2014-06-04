@@ -5,6 +5,7 @@ defmodule Tcpchat.Mixfile do
     [app: :tcpchat,
      version: "0.0.1",
      elixir: "~> 0.13.2",
+     escript_main_module: Tcpchat,
      deps: deps]
   end
 
