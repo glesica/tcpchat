@@ -6,6 +6,7 @@ defmodule Tcpchat.User do
 
   def user_handler(socket, counter, server_pid) do
     user_name = "user_#{counter}"
+    IO.puts("User #{user_name} has connected")
     user_handler(socket, user_name, %{}, server_pid)
   end
 
@@ -38,16 +39,28 @@ defmodule Tcpchat.User do
         :gen_tcp.send(socket, "*** #{server_name}: #{server_motd} ***\n")
         user_handler(socket, user_name, channels, server_pid)
 
-      {_, _, command} ->
+      {_, socket, command} ->
         str_cmd = command |> from_char_data! |> strip
         IO.puts("Received command #{str_cmd} from user #{user_name}")
         case Tcpchat.parse_cmd(str_cmd) do
           {:join, chan_name} ->
-            send(server_pid, {:join, chan_name, {user_name, self()}})
+            if Map.has_key?(channels, chan_name) do
+              :gen_tcp.send(socket, "ERROR: You are already in that channel\n")
+            else
+              send(server_pid, {:join, chan_name, {user_name, self()}})
+            end
           {:part, chan_name} ->
-            send(server_pid, {:part, chan_name, {user_name, self()}})
+            if Map.has_key?(channels, chan_name) do
+              send(server_pid, {:part, chan_name, {user_name, self()}})
+            else
+              :gen_tcp.send(socket, "ERROR: You have not joined that channel\n")
+            end
           {:talk, chan_name, message} ->
-            send(channels[chan_name], {:talk, {user_name, message}})
+            if Map.has_key?(channels, chan_name) do
+              send(channels[chan_name], {:talk, {user_name, message}})
+            else
+              :gen_tcp.send(socket, "ERROR: You have not joined that channel\n")
+            end
           {:motd} ->
             send(server_pid, {:motd, {user_name, self()}})
           {:motd, motd} ->
@@ -59,8 +72,7 @@ defmodule Tcpchat.User do
         :inet.setopts(socket, [{:active, :once}])
         user_handler(socket, user_name, channels, server_pid)
 
-      # TODO this pattern doesn't match
-      {:error, :closed} ->
+      {:tcp_closed, socket} ->
         IO.puts("User #{user_name} has closed the connection")
         # The user closed the connection, part all channels and finish
         each(keys(channels), fn chan_name ->
