@@ -22,6 +22,10 @@ defmodule Tcpchat.Channel do
       {:talk, {user_name, message}} ->
         each(users, fn {_, pid} -> send(pid, {:talked, {chan_name, user_name, message}}) end)
         channel_handler(chan_name, chan_topic, users)
+
+      {:nick, {user_name, new_user_name}} ->
+        each(users, fn {_, pid} -> send(pid, {:nicked, {chan_name, user_name, new_user_name}}) end)
+        channel_handler(chan_name, chan_topic, users)
     end
   end
 

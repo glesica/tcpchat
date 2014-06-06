@@ -39,6 +39,10 @@ defmodule Tcpchat.User do
         :gen_tcp.send(socket, "*** #{server_name}: #{server_motd} ***\n")
         user_handler(socket, user_name, channels, server_pid)
 
+      {:nicked, {from_chan_name, from_user_name, new_user_name}} ->
+        :gen_tcp.send(socket, "#{from_chan_name}> *** #{from_user_name} is now known as #{new_user_name} ***\n")
+        user_handler(socket, user_name, channels, server_pid)
+
       {_, socket, command} ->
         str_cmd = command |> from_char_data! |> strip
         IO.puts("Received command #{str_cmd} from user #{user_name}")
@@ -61,6 +65,13 @@ defmodule Tcpchat.User do
             else
               :gen_tcp.send(socket, "ERROR: You have not joined that channel\n")
             end
+          {:nick, new_user_name} ->
+            :inet.setopts(socket, [{:active, :once}])
+            # Alert the chanels we're in of our name change
+            each(channels, fn {_, chan_pid} ->
+              send(chan_pid, {:nick, {user_name, new_user_name}})
+            end)
+            user_handler(socket, new_user_name, channels, server_pid)
           {:motd} ->
             send(server_pid, {:motd, {user_name, self()}})
           {:motd, motd} ->
