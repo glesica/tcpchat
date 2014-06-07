@@ -31,3 +31,5 @@ The following commands should work:
   * `/part <channel>` - leave a channel (`> /part mychannel`)
   * `/talk <channel> <message>` - say something in a channel (`> /talk mychannel hello there!`)
   * `/motd` - view the message of the day
+  * `/nick <name>` - change your user name
+  * `/list` - show a list of active channels
