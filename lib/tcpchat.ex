@@ -49,6 +49,8 @@ defmodule Tcpchat do
     /part <channel> - leave a channel
     /talk <channel> <message> - send a message to a channel
     /motd - view the server message of the day
+    /list - show a list of occupied channels
+    /nick <name> - change your user name
     """
   end
 
