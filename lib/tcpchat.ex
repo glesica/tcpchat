@@ -30,6 +30,8 @@ defmodule Tcpchat do
         {:talk, chan, msg_parts |> join(" ")}
       ["/nick", nick] ->
         {:nick, nick}
+      ["/list"] ->
+        {:list}
       ["/motd"] ->
         {:motd}
       ["/motd" | msg_parts] ->

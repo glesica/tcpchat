@@ -39,6 +39,10 @@ defmodule Tcpchat.User do
         :gen_tcp.send(socket, "*** #{server_name}: #{server_motd} ***\n")
         user_handler(socket, user_name, channels, server_pid)
 
+      {:list, {chan_names}} ->
+        :gen_tcp.send(socket, "*** #{inspect chan_names} ***\n")
+        user_handler(socket, user_name, channels, server_pid)
+
       {:nicked, {from_chan_name, from_user_name, new_user_name}} ->
         :gen_tcp.send(socket, "#{from_chan_name}> *** #{from_user_name} is now known as #{new_user_name} ***\n")
         user_handler(socket, user_name, channels, server_pid)
@@ -72,6 +76,8 @@ defmodule Tcpchat.User do
               send(chan_pid, {:nick, {user_name, new_user_name}})
             end)
             user_handler(socket, new_user_name, channels, server_pid)
+          {:list} ->
+            send(server_pid, {:list, {user_name, self()}})
           {:motd} ->
             send(server_pid, {:motd, {user_name, self()}})
           {:motd, motd} ->

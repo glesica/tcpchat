@@ -53,6 +53,10 @@ defmodule Tcpchat.Server do
       {:motd, motd, {_, user_pid}} ->
         send(user_pid, {:motd, {server_name, motd}})
         server_handler(server_name, motd, channels)
+
+      {:list, {_, user_pid}} ->
+        send(user_pid, {:list, {keys(channels)}})
+        server_handler(server_name, server_motd, channels)
     end
   end
 
